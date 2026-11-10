@@ -1,18 +1,21 @@
 // Central demo configuration. Replace placeholders with real values when available.
+// One value drives every advertised discount so the campaign and the pop-up cannot disagree.
+const campaignDiscountPercent = 20;
+
 export const shopConfig = {
   currency: { symbol: "৳", locale: "en-BD", code: "BDT" },
   phone: { display: "+8801716509407", tel: "+8801716509407" },
   email: "sholoksell@gmail.com",
   dataMode: "sample",
   flashSale: { endsAt: "2026-12-31T23:59:59+06:00" },
-  campaign: { discountPercent: 20, active: true, startsAt: "2026-01-01T00:00:00+06:00", endsAt: "2026-12-31T23:59:59+06:00" },
+  campaign: { discountPercent: campaignDiscountPercent, active: true, startsAt: "2026-01-01T00:00:00+06:00", endsAt: "2026-12-31T23:59:59+06:00" },
   offer: {
     active: true,
     startsAt: "2026-01-01T00:00:00+06:00",
     endsAt: "2026-12-31T23:59:59+06:00",
     headline: "A Little Something Special",
-    copy: "Explore selected Sholok favorites with up to 25% off.",
-    badge: "Up to 25% OFF",
+    copy: `Explore selected Sholok favorites with up to ${campaignDiscountPercent}% off.`,
+    badge: `Up to ${campaignDiscountPercent}% OFF`,
     cta: "Explore Offers",
   },
   locations: [

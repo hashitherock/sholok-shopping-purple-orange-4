@@ -38,6 +38,12 @@ describe("SHOLOK corrections", () => {
     expect(new Set(rec.items.map((p) => p.id)).size).toBe(15);
     expect(rec.items.every((p) => p.inStock)).toBe(true);
   });
+  it("advertises no more than the campaign discount in the offer pop-up", () => {
+    const { campaign, offer } = shopConfig;
+    expect(offer.badge).toContain(`${campaign.discountPercent}%`);
+    expect(offer.copy).toContain(`${campaign.discountPercent}%`);
+    expect(Number(offer.badge.match(/\d+/)?.[0])).toBeLessThanOrEqual(campaign.discountPercent);
+  });
   it("preserves existing Dhaka delivery areas in the hierarchy", () => {
     expect(deliveryAreas["Dhaka"]?.["Dhaka"]).toEqual(["Gulshan", "Dhanmondi", "Uttara", "Mirpur"]);
   });

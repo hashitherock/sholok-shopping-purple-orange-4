@@ -4,5 +4,6 @@
 - [x] Add shopping listing routes with shared state and hierarchical delivery selection.
 - [x] Correct sale expiry, campaign visibility and recommendation fallback; 13 tests passed.
 - [x] Test shopping flows and all eight requested viewport widths; no horizontal overflow or browser errors observed.
+- [x] Align the offer pop-up with the campaign discount (one value now drives both; was 25% vs 20%).
 - [ ] Confirm official sale dates (existing dates remain sample configuration; user has not supplied dates).
 - [ ] Match the floating-cart screenshot precisely (the brief was uploaded, but the referenced screenshot was not).
