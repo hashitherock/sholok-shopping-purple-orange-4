@@ -11,9 +11,9 @@ import { products } from "@/lib/shop/products";
 import { searchProducts } from "@/lib/shop/search";
 import { useShop, scrollToId } from "@/lib/shop/store";
 
-export function Logo() {
+export function Logo({ className = "text-primary" }: { className?: string }) {
   return (
-    <a href="/" aria-label="SHOLOK home" className="shrink-0 font-logo text-2xl leading-none text-primary md:text-[28px]">SHOLOK</a>
+    <a href="/" aria-label="SHOLOK home" className={`shrink-0 font-logo text-2xl leading-none md:text-[28px] ${className}`}>SHOLOK</a>
   );
 }
 

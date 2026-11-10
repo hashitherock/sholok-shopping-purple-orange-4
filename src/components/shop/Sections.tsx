@@ -79,10 +79,10 @@ function Countdown({ ms }: { ms: number | null }) {
     : [[Math.floor(s / 86400), "Days"], [Math.floor((s % 86400) / 3600), "Hrs"], [Math.floor((s % 3600) / 60), "Min"], [s % 60, "Sec"]];
   return (
     <div className="flex items-center gap-1.5" role="timer" aria-label="Time left in flash sale">
-      <span className="mr-1 text-xs font-medium text-muted-foreground">Ends in</span>
+      <span className="mr-1 text-xs font-semibold uppercase tracking-wider opacity-90">Ends in</span>
       {parts.map(([v, l]) => (
-        <span key={l as string} className="flex min-w-11 flex-col items-center rounded-lg bg-sale px-1.5 py-1 text-sale-foreground">
-          <span className="font-display text-base font-bold tabular-nums leading-none">{typeof v === "number" ? String(v).padStart(2, "0") : v}</span>
+        <span key={l as string} className="flex min-w-13 flex-col items-center rounded-xl bg-primary-foreground px-2 py-1.5 text-sale shadow">
+          <span className="font-display text-xl font-extrabold tabular-nums leading-none">{typeof v === "number" ? String(v).padStart(2, "0") : v}</span>
           <span className="text-[9px] uppercase tracking-wide opacity-90">{l}</span>
         </span>
       ))}
@@ -96,15 +96,19 @@ export function FlashSaleSection() {
   const ended = left === 0;
   const items = useMemo(() => products.filter((p) => p.isFlashSale && p.discountPercentage > 0 && p.inStock), []);
   return (
-    <section id="flash-sale" aria-labelledby="flash-title" className="scroll-mt-16 border-y-2 border-sale/30 bg-sale-soft py-5">
-      <SectionHeader id="flash-title" title={<span className="flex items-center gap-2"><Zap className="size-6 fill-sale text-sale" aria-hidden />Flash Sale</span>} subtitle={ended ? "This sale has ended. Check back for new deals." : "Limited-time deals on selected products."}>
+    <section id="flash-sale" aria-labelledby="flash-title" className="scroll-mt-16 overflow-hidden rounded-3xl bg-primary-soft shadow-elegant">
+      <div className="flash-band flex flex-wrap items-center justify-between gap-4 px-5 py-5 text-primary-foreground md:px-7">
+        <div>
+          <h2 id="flash-title" className="flex items-center gap-2 text-2xl font-extrabold md:text-3xl"><span className="grid size-10 place-items-center rounded-full bg-primary-foreground/15"><Zap className="size-5 fill-current" aria-hidden /></span>Flash Sale</h2>
+          <p className="mt-1 text-sm text-primary-foreground/85">{ended ? "This sale has ended. Check back for new deals." : `Up to ${Math.max(0, ...items.map((p) => p.discountPercentage))}% off — limited-time deals.`}</p>
+        </div>
         <div className="flex flex-wrap items-center gap-4">
           <Countdown ms={left} />
-          <Button variant="plain" onClick={() => setView({ type: "all" })} className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">View All <ArrowRight className="size-4" aria-hidden /></Button>
+          <Button variant="plain" onClick={() => setView({ type: "all" })} className="flex items-center gap-1 rounded-full bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary hover:bg-sale hover:text-sale-foreground">View All <ArrowRight className="size-4" aria-hidden /></Button>
         </div>
-      </SectionHeader>
+      </div>
       {!ended && (
-        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+        <div className="p-4 md:p-6"><Carousel opts={{ align: "start", dragFree: true }} className="w-full">
           <CarouselContent className="-ml-3 md:-ml-4">
             {items.map((p) => (
               <CarouselItem key={p.id} className="basis-1/2 pl-3 sm:basis-1/3 md:pl-4 lg:basis-1/4 xl:basis-1/6"><ProductCard product={p} /></CarouselItem>
@@ -112,7 +116,7 @@ export function FlashSaleSection() {
           </CarouselContent>
           <CarouselPrevious className="-left-3 hidden bg-surface md:flex" />
           <CarouselNext className="-right-3 hidden bg-surface md:flex" />
-        </Carousel>
+        </Carousel></div>
       )}
     </section>
   );

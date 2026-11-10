@@ -169,3 +169,5 @@
 .auth-hero { background: radial-gradient(120% 120% at 100% 0%, var(--sale) 0%, transparent 55%), linear-gradient(135deg, var(--primary-deep), var(--primary)); }
 .social-btn { background: oklch(1 0 0); color: oklch(0.2 0 0); border: 1px solid oklch(0.53 0.003 150); font-family: "Google Sans", inherit; }
 .social-btn:hover { border-color: var(--sale); box-shadow: 0 0 0 3px color-mix(in oklab, var(--sale) 18%, transparent); }
+.floating-cart { background: linear-gradient(120deg, var(--primary) 0%, var(--primary) 45%, var(--sale) 100%); }
+.flash-band { background: linear-gradient(115deg, var(--primary-deep) 0%, var(--primary) 50%, var(--sale) 100%); }

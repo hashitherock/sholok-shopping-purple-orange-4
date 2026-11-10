@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { deliveryAreas } from "@/lib/shop/delivery";
 import { useEffect, useState } from "react";
-import { Minus, Plus, Trash2, ShoppingBag, Heart, MapPin, Check, Store, BadgePercent, Truck, Users, Mail, Lock, UserRound, Eye, EyeOff, LogOut, ShieldCheck } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, Heart, MapPin, Check, Store, BadgePercent, Truck, Users, Mail, Lock, UserRound, Eye, EyeOff, LogOut, ShieldCheck, Phone } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -133,7 +133,7 @@ function SocialButton({ provider, label }: { provider: "google" | "facebook"; la
   );
 }
 
-function Field({ icon: Icon, label, type, name, autoComplete, minLength }: { icon: typeof Mail; label: string; type: string; name: string; autoComplete: string; minLength?: number }) {
+function Field({ icon: Icon, label, type, name, autoComplete, minLength, onChange }: { icon: typeof Mail; label: string; type: string; name: string; autoComplete: string; minLength?: number; onChange?: (v: string) => void }) {
   const [show, setShow] = useState(false);
   const isPw = type === "password";
   return (
@@ -142,8 +142,8 @@ function Field({ icon: Icon, label, type, name, autoComplete, minLength }: { ico
       <span className="relative flex items-center">
         <Icon className="pointer-events-none absolute left-4 size-4 text-muted-foreground" aria-hidden />
         <input
-          name={name} type={isPw && show ? "text" : type} required autoComplete={autoComplete} minLength={minLength}
-          placeholder={isPw ? "••••••••" : type === "email" ? "you@example.com" : "Your full name"}
+          name={name} type={isPw && show ? "text" : type} required autoComplete={autoComplete} minLength={minLength} onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+          placeholder={isPw ? "••••••••" : type === "email" ? "you@example.com" : type === "tel" ? "01XXXXXXXXX" : "Your full name"}
           className="h-12 w-full rounded-full border border-input bg-surface pl-11 pr-11 text-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
         />
         {isPw && (
@@ -168,6 +168,8 @@ export function AccountDialog() {
   const { dialog, openDialog, authTab, openAuth, authReason, login, register, user, logout } = useShop();
   const [error, setError] = useState<string | null>(null);
   const [forgot, setForgot] = useState(false);
+  const [pw, setPw] = useState("");
+  const strength = pw.length < 8 ? 0 : [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(pw)).length;
   const open = dialog === "account";
   useEffect(() => { if (open) { setError(null); setForgot(false); } }, [open, authTab]);
 
@@ -181,6 +183,8 @@ export function AccountDialog() {
   const onRegister = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
+    if (!/^01[3-9]\d{8}$/.test(String(f.get("phone")).replace(/[\s-]/g, "").replace(/^\+?88/, ""))) return setError("Please enter a valid Bangladeshi phone number, e.g. 01712345678.");
+    if (f.get("password") !== f.get("confirm")) return setError("Passwords do not match.");
     const err = register({ name: String(f.get("name")), email: String(f.get("email")), password: String(f.get("password")) });
     if (err) return setError(err);
     toast.success("Your account has been created"); openDialog(authReason ? "cart" : null);
@@ -188,7 +192,7 @@ export function AccountDialog() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => openDialog(o ? "account" : null)}>
-      <DialogContent className="max-w-[440px] overflow-hidden rounded-3xl border-0 p-0 shadow-elegant sm:rounded-3xl">
+      <DialogContent className="max-h-[92vh] max-w-[440px] overflow-y-auto rounded-3xl border-0 p-0 shadow-elegant sm:rounded-3xl">
         <div className="auth-hero px-7 pb-8 pt-7 text-primary-foreground">
           <span className="mb-3 grid size-12 place-items-center rounded-2xl bg-primary-foreground/15 backdrop-blur"><ShieldCheck className="size-6" aria-hidden /></span>
           <DialogTitle className="text-2xl font-extrabold tracking-tight">
@@ -222,7 +226,7 @@ export function AccountDialog() {
                 <form key="login" className="grid gap-4" onSubmit={onLogin}>
                   <Field icon={Mail} label="Email Address" type="email" name="email" autoComplete="email" />
                   <Field icon={Lock} label="Password" type="password" name="password" autoComplete="current-password" />
-                  <Button variant="link" type="button" className="-mt-2 h-auto justify-self-end p-0 text-xs" onClick={() => setForgot(true)}>Forgot password?</Button>
+                  <div className="-mt-2 flex items-center justify-between"><label className="flex items-center gap-2 text-xs"><input type="checkbox" name="remember" defaultChecked className="size-4 accent-primary" />Remember me</label><Button variant="link" type="button" className="h-auto p-0 text-xs" onClick={() => setForgot(true)}>Forgot password?</Button></div>
                   {error && <p role="alert" className="rounded-2xl bg-sale-soft px-4 py-2.5 text-sm text-sale">{error}</p>}
                   <Button type="submit" className="h-12 font-semibold">Login</Button>
                   <Divider />
@@ -235,7 +239,11 @@ export function AccountDialog() {
                 <form key="register" className="grid gap-4" onSubmit={onRegister}>
                   <Field icon={UserRound} label="Full Name" type="text" name="name" autoComplete="name" />
                   <Field icon={Mail} label="Email Address" type="email" name="email" autoComplete="email" />
-                  <Field icon={Lock} label="Password" type="password" name="password" autoComplete="new-password" minLength={6} />
+                  <Field icon={Phone} label="Phone Number" type="tel" name="phone" autoComplete="tel" />
+                  <Field icon={Lock} label="Password" type="password" name="password" autoComplete="new-password" minLength={8} onChange={setPw} />
+                  <div className="-mt-2 grid gap-1"><div className="grid grid-cols-4 gap-1">{[1, 2, 3, 4].map((i) => <span key={i} className={`h-1.5 rounded-full ${i <= strength ? (strength >= 3 ? "bg-primary" : "bg-sale") : "bg-muted"}`} />)}</div><span className="text-xs text-muted-foreground">Password strength: {["Too short", "Weak", "Fair", "Good", "Strong"][strength]}</span></div>
+                  <Field icon={Lock} label="Confirm Password" type="password" name="confirm" autoComplete="new-password" minLength={8} />
+                  <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="terms" required className="mt-0.5 size-4 accent-primary" />I agree to the Terms & Conditions and Privacy Policy</label>
                   {error && <p role="alert" className="rounded-2xl bg-sale-soft px-4 py-2.5 text-sm text-sale">{error}</p>}
                   <Button type="submit" className="h-12 font-semibold">Register</Button>
                   <Divider />
