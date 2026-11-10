@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { deliveryAreas } from "@/lib/shop/delivery";
 import { useEffect, useState } from "react";
 import { Minus, Plus, Trash2, ShoppingBag, Heart, MapPin, Check, Store, BadgePercent, Truck, Users, Mail, Lock, UserRound, Eye, EyeOff, LogOut, ShieldCheck, Phone } from "lucide-react";
@@ -67,7 +68,7 @@ export function WishlistDrawer() {
       <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
         <SheetHeader className="border-b border-border p-5">
           <SheetTitle>My Wishlist ({items.length})</SheetTitle>
-          <SheetDescription>Saved on this device only.</SheetDescription>
+          <SheetDescription>Log in to keep your wishlist on every device.</SheetDescription>
         </SheetHeader>
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
@@ -120,11 +121,17 @@ const GOOGLE_SVG = '<path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27
 const FACEBOOK_SVG = '<path fill="#1877F2" d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/>';
 
 function SocialButton({ provider, label }: { provider: "google" | "facebook"; label: string }) {
+  const { loginWithGoogle } = useShop();
   return (
     <Button
       variant="plain"
       type="button"
-      onClick={() => toast(`${provider === "google" ? "Google" : "Facebook"} sign-in is coming soon`, { description: "Please use your email address for now." })}
+      onClick={async () => {
+        if (provider === "facebook") return toast("Facebook sign-in is not available yet", { description: "Please use Google or your email address." });
+        const err = await loginWithGoogle();
+        if (err) toast.error(err);
+        return undefined;
+      }}
       className="social-btn h-11 w-full gap-2.5 rounded-full px-3 text-sm font-medium"
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[18px]" dangerouslySetInnerHTML={{ __html: provider === "google" ? GOOGLE_SVG : FACEBOOK_SVG }} />
@@ -165,28 +172,35 @@ function Divider() {
 }
 
 export function AccountDialog() {
-  const { dialog, openDialog, authTab, openAuth, authReason, login, register, user, logout } = useShop();
+  const { dialog, openDialog, authTab, openAuth, authReason, login, register, resetPassword, user, logout } = useShop();
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [forgot, setForgot] = useState(false);
   const [pw, setPw] = useState("");
   const strength = pw.length < 8 ? 0 : [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(pw)).length;
   const open = dialog === "account";
-  useEffect(() => { if (open) { setError(null); setForgot(false); } }, [open, authTab]);
+  useEffect(() => { if (open) { setError(null); setForgot(false); setSent(null); } }, [open, authTab]);
 
-  const onLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const onLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const err = login(String(f.get("email")), String(f.get("password")));
+    setBusy(true); setError(null);
+    const err = await login(String(f.get("email")), String(f.get("password")));
+    setBusy(false);
     if (err) return setError(err);
     toast.success("Welcome back!"); openDialog(authReason ? "cart" : null);
   };
-  const onRegister = (e: React.FormEvent<HTMLFormElement>) => {
+  const onRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     if (!/^01[3-9]\d{8}$/.test(String(f.get("phone")).replace(/[\s-]/g, "").replace(/^\+?88/, ""))) return setError("Please enter a valid Bangladeshi phone number, e.g. 01712345678.");
     if (f.get("password") !== f.get("confirm")) return setError("Passwords do not match.");
-    const err = register({ name: String(f.get("name")), email: String(f.get("email")), password: String(f.get("password")) });
-    if (err) return setError(err);
+    setBusy(true); setError(null);
+    const r = await register({ name: String(f.get("name")), email: String(f.get("email")), phone: String(f.get("phone")), password: String(f.get("password")) });
+    setBusy(false);
+    if (r.error) return setError(r.error);
+    if (r.needsConfirm) return setSent(`We've sent a confirmation link to ${String(f.get("email"))}. Open it to activate your account, then log in.`);
     toast.success("Your account has been created"); openDialog(authReason ? "cart" : null);
   };
 
@@ -196,7 +210,7 @@ export function AccountDialog() {
         <div className="auth-hero px-7 pb-8 pt-7 text-primary-foreground">
           <span className="mb-3 grid size-12 place-items-center rounded-2xl bg-primary-foreground/15 backdrop-blur"><ShieldCheck className="size-6" aria-hidden /></span>
           <DialogTitle className="text-2xl font-extrabold tracking-tight">
-            {user ? `Hello, ${user.name.split(" ")[0]}` : forgot ? "Reset your password" : authTab === "login" ? "Welcome back" : "Create your account"}
+            {user ? `Hello, ${user.name.split(" ")[0]}` : sent ? "Check your email" : forgot ? "Reset your password" : authTab === "login" ? "Welcome back" : "Create your account"}
           </DialogTitle>
           <DialogDescription className="mt-1 text-sm text-primary-foreground/80">
             {user ? user.email : forgot ? "Enter your email and we'll send you a reset link." : authReason ?? (authTab === "login" ? "Log in to track orders and save your favourites." : "Join SHOLOK and start shopping in seconds.")}
@@ -205,11 +219,17 @@ export function AccountDialog() {
 
         <div className="-mt-4 grid gap-5 rounded-t-3xl bg-background px-7 pb-7 pt-6">
           {user ? (
-            <Button variant="outline" className="h-11" onClick={() => { logout(); openDialog(null); }}><LogOut /> Log out</Button>
+            <div className="grid gap-2.5">
+              <Button asChild className="h-11"><Link to="/account" onClick={() => openDialog(null)}><UserRound /> My Account</Link></Button>
+              <Button variant="outline" className="h-11" onClick={() => { void logout(); openDialog(null); }}><LogOut /> Log out</Button>
+            </div>
+          ) : sent ? (
+            <div className="grid gap-4 text-center"><span className="mx-auto grid size-14 place-items-center rounded-full bg-primary-soft text-primary"><Mail className="size-6" /></span><p className="text-sm">{sent}</p><Button variant="outline" onClick={() => { setSent(null); openAuth("login", authReason ?? undefined); }}>Back to Login</Button></div>
           ) : forgot ? (
-            <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); toast.success("If an account exists for this email, a reset link is on its way."); setForgot(false); }}>
+            <form className="grid gap-4" onSubmit={async (e) => { e.preventDefault(); const email = String(new FormData(e.currentTarget).get("email")); setBusy(true); const err = await resetPassword(email); setBusy(false); if (err) return setError(err); setForgot(false); setSent(`If an account exists for ${email}, a password reset link is on its way. Check your inbox.`); }}>
               <Field icon={Mail} label="Email Address" type="email" name="email" autoComplete="email" />
-              <Button type="submit" className="h-12 font-semibold">Send reset link</Button>
+              {error && <p role="alert" className="rounded-2xl bg-sale-soft px-4 py-2.5 text-sm text-sale">{error}</p>}
+              <Button type="submit" disabled={busy} className="h-12 font-semibold">{busy ? "Sending…" : "Send reset link"}</Button>
               <Button variant="link" type="button" onClick={() => setForgot(false)}>Back to Login</Button>
             </form>
           ) : (
@@ -228,7 +248,7 @@ export function AccountDialog() {
                   <Field icon={Lock} label="Password" type="password" name="password" autoComplete="current-password" />
                   <div className="-mt-2 flex items-center justify-between"><label className="flex items-center gap-2 text-xs"><input type="checkbox" name="remember" defaultChecked className="size-4 accent-primary" />Remember me</label><Button variant="link" type="button" className="h-auto p-0 text-xs" onClick={() => setForgot(true)}>Forgot password?</Button></div>
                   {error && <p role="alert" className="rounded-2xl bg-sale-soft px-4 py-2.5 text-sm text-sale">{error}</p>}
-                  <Button type="submit" className="h-12 font-semibold">Login</Button>
+                  <Button type="submit" disabled={busy} className="h-12 font-semibold">{busy ? "Logging in…" : "Login"}</Button>
                   <Divider />
                   <div className="grid gap-2.5">
                     <SocialButton provider="google" label="Login With Google" />
@@ -245,7 +265,7 @@ export function AccountDialog() {
                   <Field icon={Lock} label="Confirm Password" type="password" name="confirm" autoComplete="new-password" minLength={8} />
                   <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="terms" required className="mt-0.5 size-4 accent-primary" />I agree to the Terms & Conditions and Privacy Policy</label>
                   {error && <p role="alert" className="rounded-2xl bg-sale-soft px-4 py-2.5 text-sm text-sale">{error}</p>}
-                  <Button type="submit" className="h-12 font-semibold">Register</Button>
+                  <Button type="submit" disabled={busy} className="h-12 font-semibold">{busy ? "Creating account…" : "Register"}</Button>
                   <Divider />
                   <div className="grid gap-2.5">
                     <SocialButton provider="google" label="Sign Up With Google" />

@@ -4,6 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { toast } from "sonner";
 import type { CategoryId } from "./categories";
 import { products, productById, type Product } from "./products";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
 export type View = { type: "all" } | { type: "category"; id: CategoryId } | { type: "search"; query: string } | null;
 type Dialog = "account" | "seller" | "cart" | "wishlist" | "location" | "offer" | "compare" | null;
@@ -38,15 +40,17 @@ type Ctx = {
   authTab: AuthTab;
   openAuth: (tab: AuthTab, reason?: string) => void;
   authReason: string | null;
-  register: (a: { name: string; email: string; password: string }) => string | null;
-  login: (email: string, password: string) => string | null;
-  logout: () => void;
+  register: (a: { name: string; email: string; phone: string; password: string }) => Promise<{ error: string | null; needsConfirm: boolean }>;
+  login: (email: string, password: string) => Promise<string | null>;
+  loginWithGoogle: () => Promise<string | null>;
+  resetPassword: (email: string) => Promise<string | null>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   checkout: () => void;
 };
 
 export type AuthTab = "login" | "register";
-export type Account = { name: string; email: string };
-type StoredAccount = Account & { password: string };
+export type Account = { id: string; name: string; email: string; phone: string };
 
 /** Checkout rule: signed-in shoppers proceed; known accounts are asked to log in; everyone else to register. */
 export function checkoutAuthStep(signedIn: boolean, hasAccount: boolean): "proceed" | AuthTab {
@@ -91,7 +95,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [location, setLocationState] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [productId, setProductId] = useState<string | null>(null);
-  const [accounts, setAccounts] = useState<StoredAccount[]>([]);
+  const [hasAccount, setHasAccount] = useState(false);
   const [user, setUser] = useState<Account | null>(null);
   const [authTab, setAuthTab] = useState<AuthTab>("login");
   const [authReason, setAuthReason] = useState<string | null>(null);
@@ -109,8 +113,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       write(ss, "sholok.seed", s);
     }
     setSeed(s);
-    setAccounts(read(ls, "sholok.accounts", []));
-    setUser(read(ls, "sholok.user", null));
+    setHasAccount(read(ls, "sholok.hasAccount", false));
     setHydrated(true);
   }, []);
 
@@ -141,7 +144,13 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       toast(has ? "Removed from wishlist" : "Saved to wishlist", { description: productById(id)?.name });
       return has ? w.filter((x) => x !== id) : [...w, id];
     });
-  }, []);
+    if (user) {
+      const has = wishlist.includes(id);
+      void (has
+        ? supabase.from("wishlist_items").delete().eq("user_id", user.id).eq("product_id", id)
+        : supabase.from("wishlist_items").upsert({ user_id: user.id, product_id: id }));
+    }
+  }, [user, wishlist]);
 
   const setView = useCallback((v: View) => {
     setViewState(v);
@@ -173,25 +182,51 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const showCategory = useCallback((id: CategoryId) => setView({ type: "category", id }), [setView]);
 
   const openAuth = useCallback((tab: AuthTab, reason?: string) => { setAuthTab(tab); setAuthReason(reason ?? null); setDialog("account"); }, []);
-  const signIn = (a: Account) => { setUser(a); write(window.localStorage, "sholok.user", a); };
-  const register = (a: { name: string; email: string; password: string }) => {
-    const email = a.email.trim().toLowerCase();
-    if (accounts.some((x) => x.email === email)) return "An account with this email already exists. Please log in.";
-    const next = [...accounts, { name: a.name.trim(), email, password: a.password }];
-    setAccounts(next); write(window.localStorage, "sholok.accounts", next);
-    signIn({ name: a.name.trim(), email });
-    return null;
+  const markAccount = () => { setHasAccount(true); write(window.localStorage, "sholok.hasAccount", true); };
+  const loadUser = useCallback(async (u: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
+    if (!u) { setUser(null); return; }
+    markAccount();
+    const { data: prof } = await supabase.from("profiles").select("full_name, phone").eq("id", u.id).maybeSingle();
+    const meta = u.user_metadata ?? {};
+    setUser({ id: u.id, email: u.email ?? "", name: (prof?.full_name || String(meta["full_name"] ?? meta["name"] ?? "") || (u.email ?? "").split("@")[0] || "Customer"), phone: prof?.phone ?? "" });
+    // Merge this device's wishlist into the account, then load the saved list.
+    const local = read<string[]>(window.localStorage, "sholok.wishlist", []);
+    if (local.length) await supabase.from("wishlist_items").upsert(local.map((product_id) => ({ user_id: u.id, product_id })));
+    const { data: saved } = await supabase.from("wishlist_items").select("product_id").eq("user_id", u.id);
+    if (saved) setWishlist(saved.map((r) => r.product_id).filter((id) => !!productById(id)));
+  }, []);
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "USER_UPDATED") setTimeout(() => void loadUser(session?.user ?? null), 0);
+      if (event === "SIGNED_OUT") setUser(null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [loadUser]);
+  const refreshUser = useCallback(async () => { const { data } = await supabase.auth.getUser(); await loadUser(data.user); }, [loadUser]);
+
+  const friendly = (m: string) => /invalid login/i.test(m) ? "Incorrect email or password. Please try again." : /not confirmed/i.test(m) ? "Please confirm your email first — check your inbox for the link." : /already registered/i.test(m) ? "An account with this email already exists. Please log in." : m;
+  const register = async (a: { name: string; email: string; phone: string; password: string }) => {
+    const { data, error } = await supabase.auth.signUp({ email: a.email.trim(), password: a.password, options: { emailRedirectTo: window.location.origin, data: { full_name: a.name.trim(), phone: a.phone.trim() } } });
+    if (error) return { error: friendly(error.message), needsConfirm: false };
+    if (data.user && data.user.identities?.length === 0) return { error: "An account with this email already exists. Please log in.", needsConfirm: false };
+    markAccount();
+    return { error: null, needsConfirm: !data.session };
   };
-  const login = (email: string, password: string) => {
-    const acc = accounts.find((x) => x.email === email.trim().toLowerCase());
-    if (!acc) return "No account found with this email. Please register first.";
-    if (acc.password !== password) return "Incorrect password. Please try again.";
-    signIn({ name: acc.name, email: acc.email });
-    return null;
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    return error ? friendly(error.message) : null;
   };
-  const logout = () => { setUser(null); try { window.localStorage.removeItem("sholok.user"); } catch { /* ignore */ } toast("You have been logged out"); };
+  const loginWithGoogle = async () => {
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    return r.error ? (r.error instanceof Error ? r.error.message : "Google sign-in failed. Please try again.") : null;
+  };
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
+    return error ? error.message : null;
+  };
+  const logout = async () => { await supabase.auth.signOut(); setUser(null); setWishlist([]); toast("You have been logged out"); void navigate({ to: "/" }); };
   const checkout = () => {
-    const step = checkoutAuthStep(!!user, accounts.length > 0);
+    const step = checkoutAuthStep(!!user, hasAccount);
     if (step === "login") openAuth("login", "Please log in to your account to continue to checkout.");
     else if (step === "register") openAuth("register", "Please create an account to continue to checkout.");
     else toast.success("Thank you! Your order request has been received.", { description: "Our team will contact you to confirm delivery." });
@@ -206,7 +241,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     compare, toggleCompare, cart, cartItems, cartCount, cartTotal, addToCart, setQty, removeFromCart,
     wishlist, toggleWishlist, view, setView, lastSearch, submitSearch, clearSearchContext, seed,
     location, setLocation, dialog, openDialog: setDialog, productId, openProduct: setProductId, showCategory,
-    user, hasAccount: accounts.length > 0, authTab, openAuth, authReason, register, login, logout, checkout,
+    user, hasAccount, authTab, openAuth, authReason, register, login, loginWithGoogle, resetPassword, logout, refreshUser, checkout,
   };
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
