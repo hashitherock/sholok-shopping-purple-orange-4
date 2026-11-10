@@ -174,7 +174,7 @@ export function MainHeader() {
           <DeliveryLocation />
           <div className="order-last w-full xl:order-none xl:min-w-32 xl:flex-1"><ProductSearch /></div>
           <div className="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
-            <ActionButton icon={User} sub={user ? user.name.split(" ")[0] : "Login"} label="My Account" onClick={() => openAuth("login")} />
+            <ActionButton icon={User} sub={user ? (user.name.split(" ")[0] ?? "Account") : "Login"} label="My Account" onClick={() => openAuth("login")} />
             <ActionButton icon={Heart} sub={`${wishlist.length} Favorite`} label="My Wishlist" count={wishlist.length} onClick={() => openDialog("wishlist")} />
             <ActionButton icon={ShoppingCart} sub={`${cartCount} Your Cart:`} label={formatPrice(cartTotal)} count={cartCount} onClick={() => openDialog("cart")} />
           </div>
