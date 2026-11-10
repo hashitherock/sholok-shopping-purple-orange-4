@@ -6,4 +6,5 @@
 - [x] Test shopping flows and all eight requested viewport widths; no horizontal overflow or browser errors observed.
 - [x] Align the offer pop-up with the campaign discount (one value now drives both; was 25% vs 20%).
 - [ ] Confirm official sale dates (existing dates remain sample configuration; user has not supplied dates).
-- [ ] Match the floating-cart screenshot precisely (the brief was uploaded, but the referenced screenshot was not).
+- [ ] Match the floating-cart screenshot precisely (the brief was uploaded, but the referenced screenshot was not).- [x] Remove "demo" wording; premium Login/Register with social buttons and Forgot password; checkout asks to log in or register.
+- [x] Round buttons with red-orange hover, collection category icons, 84 products (full rows of 6), red-orange footer.

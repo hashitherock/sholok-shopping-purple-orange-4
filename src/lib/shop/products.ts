@@ -126,6 +126,38 @@ export const products: Product[] = [
   // Vehicle Essentials
   p("v1", "Dashboard Phone Mount", "DriveMate", "vehicle-essentials", "Accessories", carmount, 17, 15, [4.4, 102], ["phone holder", "car mount", "car"], "Adjustable suction-cup phone holder.", { isTrending: true }),
   p("v2", "Portable Car Vacuum", "DriveMate", "vehicle-essentials", "Cleaning", carvacuum, 36, 20, [4.5, 68], ["car vacuum", "vacuum", "car cleaning"], "12V handheld vacuum with three nozzles.", { isFlashSale: true }),
+  p("v3", "Magnetic Travel Power Bank", "DriveMate", "vehicle-essentials", "Accessories", cdn("mobile-accessories/apple-magsafe-battery-pack"), 49, 10, [4.4, 57], ["power bank", "battery", "car", "travel"], "Snap-on battery pack to keep your phone charged on the road.", { isNewArrival: true }),
+  // More Home & Kitchen
+  p("hk9", "Wooden Chopping Board", "KitchenPro", "home-kitchen", "Cookware", cdn("kitchen-accessories/chopping-board"), 16, 0, [4.5, 73], ["chopping board", "cutting board", "kitchen"], "Sturdy hardwood board for daily prep."),
+  p("hk10", "Non-Stick Frying Pan", "KitchenPro", "home-kitchen", "Cookware", cdn("kitchen-accessories/pan"), 28, 15, [4.4, 88], ["pan", "frying pan", "cookware"], "Even-heating pan with a cool-touch handle.", { isFlashSale: true }),
+  p("hk11", "Compact Microwave Oven", "KitchenPro", "home-kitchen", "Appliances", cdn("kitchen-accessories/microwave-oven"), 120, 10, [4.5, 64], ["microwave", "oven", "appliance"], "20L microwave with quick-reheat presets.", { isTrending: true }),
+  p("hk12", "Steel Pot with Glass Lid", "KitchenPro", "home-kitchen", "Cookware", cdn("kitchen-accessories/silver-pot-with-glass-cap"), 33, 0, [4.3, 41], ["pot", "saucepan", "cookware"], "Stainless steel pot with a see-through lid.", { isNewArrival: true }),
+  p("hk13", "Showpiece Indoor Plant", "Lumio Home", "home-kitchen", "Decor", cdn("home-decoration/house-showpiece-plant"), 22, 0, [4.4, 36], ["plant", "decor", "showpiece"], "Life-like plant that brightens any corner."),
+  p("hk14", "Decorative Hanging Swing", "Lumio Home", "home-kitchen", "Decor", cdn("home-decoration/decoration-swing"), 45, 15, [4.2, 18], ["swing", "decor", "hanging"], "Handcrafted swing showpiece for living spaces."),
+  p("hk15", "Mug Tree Stand", "KitchenPro", "home-kitchen", "Storage", cdn("kitchen-accessories/mug-tree-stand"), 13, 0, [4.3, 29], ["mug stand", "storage", "organizer"], "Keeps six mugs tidy and within reach."),
+  // More Health & Wellness
+  p("h4", "Whey Protein Powder, 1kg", "Sholok Wellness", "health-wellness", "Supplements", cdn("groceries/protein-powder"), 38, 15, [4.6, 132], ["protein", "whey", "supplement", "fitness"], "Smooth chocolate whey for post-workout recovery.", { isTrending: true, isFlashSale: true }),
+  p("h5", "Pure Natural Honey Jar", "Sholok Wellness", "health-wellness", "Natural Foods", cdn("groceries/honey-jar"), 12, 0, [4.7, 95], ["honey", "natural", "healthy"], "Raw, unprocessed honey in a glass jar.", { isNewArrival: true }),
+  p("h6", "Smart Fitness Watch", "FlexFit", "health-wellness", "Fitness", cdn("mobile-accessories/apple-watch-series-4-gold"), 199, 10, [4.6, 211], ["smart watch", "fitness tracker", "health"], "Tracks heart rate, steps and workouts.", { isTrending: true }),
+  // More Pet Care
+  p("pt3", "Adult Dog Food, 3kg", "PawHaven", "pet-care", "Food", cdn("groceries/dog-food"), 24, 10, [4.6, 118], ["dog food", "pet food", "dog"], "Balanced nutrition for active adult dogs.", { isTrending: true }),
+  p("pt4", "Ocean Fish Cat Food", "PawHaven", "pet-care", "Food", cdn("groceries/cat-food"), 19, 0, [4.5, 87], ["cat food", "pet food", "cat"], "Tasty, protein-rich meals for cats.", { isNewArrival: true }),
+  // More Cleaning, Stationery & Office
+  p("cs3", "Soft Tissue Paper Box", "FreshNest", "cleaning-supplies", "Paper Goods", cdn("groceries/tissue-paper-box"), 4, 0, [4.4, 154], ["tissue", "napkin", "paper"], "Two-ply tissues for home and office."),
+  p("so3", "Executive Office Chair", "PaperLane", "stationery-office", "Furniture", cdn("furniture/knoll-saarinen-executive-conference-chair"), 210, 15, [4.5, 39], ["office chair", "chair", "desk"], "Ergonomic chair for long work sessions.", { isTrending: true }),
+  p("so4", "Wireless Desk Charger", "PaperLane", "stationery-office", "Desk Accessories", cdn("mobile-accessories/apple-airpower-wireless-charger"), 29, 0, [4.2, 46], ["charger", "wireless", "desk"], "Slim pad that keeps your desk cable-free.", { isNewArrival: true }),
+  // More Toys & Sports
+  p("ts6", "Beach Volleyball", "ProSport", "toys-sports", "Balls", cdn("sports-accessories/volleyball"), 18, 10, [4.4, 52], ["volleyball", "ball", "beach"], "Soft-touch ball for beach and indoor play."),
+  p("ts7", "Tennis Balls, 3-Pack", "ProSport", "toys-sports", "Racket Sports", cdn("sports-accessories/tennis-ball"), 8, 0, [4.5, 77], ["tennis", "ball"], "Pressurised balls with consistent bounce."),
+  p("ts8", "Leather Cricket Ball", "ProSport", "toys-sports", "Cricket", cdn("sports-accessories/cricket-ball"), 12, 0, [4.6, 64], ["cricket", "ball", "leather"], "Hand-stitched ball for matches and nets.", { isNewArrival: true }),
+  p("ts9", "Cricket Batting Helmet", "ProSport", "toys-sports", "Cricket", cdn("sports-accessories/cricket-helmet"), 55, 20, [4.5, 31], ["cricket", "helmet", "safety"], "Lightweight helmet with a steel grille.", { isFlashSale: true }),
+  p("ts10", "American Football", "ProSport", "toys-sports", "Balls", cdn("sports-accessories/american-football"), 23, 0, [4.3, 22], ["american football", "ball"], "Grippy composite-leather ball."),
+  p("ts11", "Baseball Glove", "ProSport", "toys-sports", "Baseball", cdn("sports-accessories/baseball-glove"), 34, 0, [4.4, 19], ["baseball", "glove", "mitt"], "Soft leather glove with a deep pocket."),
+  // More Fashion & Lifestyle
+  p("f12", "Green Oval Earrings", "Sholok Studio", "fashion-lifestyle", "Jewellery", cdn("womens-jewellery/green-oval-earring"), 15, 0, [4.3, 26], ["earrings", "jewellery", "green"], "Elegant oval drops for every day."),
+  p("f13", "Tropical Statement Earrings", "Sholok Studio", "fashion-lifestyle", "Jewellery", cdn("womens-jewellery/tropical-earring"), 18, 10, [4.5, 33], ["earrings", "jewellery", "statement"], "Colourful earrings with a playful twist.", { isTrending: true }),
+  p("f14", "Wireless Earbuds", "Apple", "fashion-lifestyle", "Gadgets", cdn("mobile-accessories/apple-airpods"), 129, 10, [4.7, 402], ["earbuds", "airpods", "wireless", "audio"], "True wireless earbuds with a charging case.", { isTrending: true }),
+  p("f15", "Flex Wireless Earphones", "Beats", "fashion-lifestyle", "Gadgets", cdn("mobile-accessories/beats-flex-wireless-earphones"), 69, 15, [4.4, 158], ["earphones", "wireless", "audio"], "All-day neckband earphones with magnetic buds.", { isNewArrival: true }),
 ];
 
 export const productById = (id: string) => products.find((x) => x.id === id);

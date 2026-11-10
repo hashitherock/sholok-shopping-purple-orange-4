@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { deliveryAreas } from "@/lib/shop/delivery";
 import { useEffect, useState } from "react";
-import { Minus, Plus, Trash2, ShoppingBag, Heart, MapPin, Check, Store, BadgePercent, Truck, Users } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, Heart, MapPin, Check, Store, BadgePercent, Truck, Users, Mail, Lock, UserRound, Eye, EyeOff, LogOut, ShieldCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import { formatPrice, isOfferActive, shopConfig } from "@/lib/shop/config";
 import { productById } from "@/lib/shop/products";
 import { useShop } from "@/lib/shop/store";
@@ -12,13 +12,13 @@ import { Price } from "./ProductCard";
 import offerImg from "@/assets/banner-women.jpg";
 
 export function CartDrawer() {
-  const { dialog, openDialog, cartItems, setQty, removeFromCart, cartTotal, cartCount } = useShop();
+  const { dialog, openDialog, cartItems, setQty, removeFromCart, cartTotal, cartCount, checkout } = useShop();
   return (
     <Sheet open={dialog === "cart"} onOpenChange={(o) => openDialog(o ? "cart" : null)}>
       <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
         <SheetHeader className="border-b border-border p-5">
           <SheetTitle>Your Cart ({cartCount})</SheetTitle>
-          <SheetDescription>Demo cart — items are saved on this device only.</SheetDescription>
+          <SheetDescription>Review your items before checkout.</SheetDescription>
         </SheetHeader>
         {cartItems.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
@@ -50,8 +50,7 @@ export function CartDrawer() {
             </ul>
             <div className="border-t border-border p-5">
               <div className="flex justify-between text-base font-bold"><span>Subtotal</span><span>{formatPrice(cartTotal)}</span></div>
-              <Button variant="plain" disabled className="mt-4 h-11 w-full rounded-lg bg-primary font-semibold text-primary-foreground opacity-60">Checkout</Button>
-              <p className="mt-2 text-center text-xs text-muted-foreground">Checkout isn't available in this demo yet.</p>
+              <Button className="mt-4 h-11 w-full font-semibold" onClick={checkout}>Checkout</Button>
             </div>
           </>
         )}
@@ -80,13 +79,13 @@ export function WishlistDrawer() {
           <ul className="flex-1 divide-y divide-border overflow-y-auto px-5">
             {items.map((p) => (
               <li key={p.id} className="flex gap-3 py-4">
-                <Button variant="plain" onClick={() => { openDialog(null); openProduct(p.id); }} className="shrink-0"><img src={p.image} alt={p.name} className="size-18 rounded-lg border border-border bg-surface object-contain p-1" /></Button>
+                <Button variant="plain" onClick={() => { openDialog(null); openProduct(p.id); }} className="shrink-0"><img src={p.image} alt={p.name} className="size-18 rounded-full border border-border bg-surface object-contain p-1" /></Button>
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <p className="line-clamp-2 text-sm font-semibold">{p.name}</p>
                   <Price product={p} />
                   <div className="mt-1 flex gap-2">
-                    <Button variant="plain" disabled={!p.inStock} onClick={() => addToCart(p.id)} className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-50">Add to Cart</Button>
-                    <Button variant="plain" onClick={() => toggleWishlist(p.id)} className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold hover:border-destructive hover:text-destructive">Remove</Button>
+                    <Button variant="plain" disabled={!p.inStock} onClick={() => addToCart(p.id)} className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-50">Add to Cart</Button>
+                    <Button variant="plain" onClick={() => toggleWishlist(p.id)} className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-destructive hover:text-destructive">Remove</Button>
                   </div>
                 </div>
               </li>
@@ -106,7 +105,7 @@ export function LocationDialog() {
   const districts = division ? Object.keys(deliveryAreas[division] ?? {}) : [];
   const areas = deliveryAreas[division]?.[district] ?? [];
   return <Dialog open={dialog === "location"} onOpenChange={(o) => openDialog(o ? "location" : null)}>
-    <DialogContent className="max-w-md"><DialogHeader><DialogTitle>Choose your delivery location</DialogTitle><DialogDescription>Sample delivery areas{location ? ` · Current: ${location}` : ""}</DialogDescription></DialogHeader>
+    <DialogContent className="max-w-md"><DialogHeader><DialogTitle>Choose your delivery location</DialogTitle><DialogDescription>Select your division, district and area{location ? ` · Current: ${location}` : ""}</DialogDescription></DialogHeader>
       <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); if (!area) return; setLocation(`${division} / ${district} / ${area}`); openDialog(null); }}>
         <label className="grid gap-1 text-sm font-medium">Division<select aria-label="Division" required value={division} onChange={(e) => { setDivision(e.target.value); setDistrict(""); setArea(""); }} className="h-11 rounded-md border border-input bg-surface px-3"><option value="">Select Division</option>{Object.keys(deliveryAreas).map((d) => <option key={d}>{d}</option>)}</select></label>
         <label className="grid gap-1 text-sm font-medium">District<select aria-label="District" required disabled={!division} value={district} onChange={(e) => { setDistrict(e.target.value); setArea(""); }} className="h-11 rounded-md border border-input bg-surface px-3"><option value="">Select District</option>{districts.map((d) => <option key={d}>{d}</option>)}</select></label>
@@ -117,37 +116,138 @@ export function LocationDialog() {
   </Dialog>;
 }
 
-function DemoForm({ fields, cta, note }: { fields: { label: string; type: string }[]; cta: string; note: string }) {
-  const [sent, setSent] = useState(false);
+const GOOGLE_SVG = '<path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/>';
+const FACEBOOK_SVG = '<path fill="#1877F2" d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/>';
+
+function SocialButton({ provider, label }: { provider: "google" | "facebook"; label: string }) {
   return (
-    <form onSubmit={(e) => { e.preventDefault(); setSent(true); }} className="grid gap-3 pt-2">
-      {fields.map((f) => (
-        <label key={f.label} className="grid gap-1 text-sm font-medium">
-          {f.label}
-          <input type={f.type} required className="h-10 rounded-lg border border-input bg-surface px-3 text-sm outline-none focus:border-primary" />
-        </label>
-      ))}
-      <Button variant="plain" className="h-11 rounded-lg bg-primary font-semibold text-primary-foreground hover:bg-primary-deep">{cta}</Button>
-      {sent && <p role="status" className="rounded-lg bg-primary-soft p-3 text-sm text-primary-deep">{note}</p>}
-    </form>
+    <Button
+      variant="plain"
+      type="button"
+      onClick={() => toast(`${provider === "google" ? "Google" : "Facebook"} sign-in is coming soon`, { description: "Please use your email address for now." })}
+      className="social-btn h-11 w-full gap-2.5 rounded-full px-3 text-sm font-medium"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[18px]" dangerouslySetInnerHTML={{ __html: provider === "google" ? GOOGLE_SVG : FACEBOOK_SVG }} />
+      {label}
+    </Button>
+  );
+}
+
+function Field({ icon: Icon, label, type, name, autoComplete, minLength }: { icon: typeof Mail; label: string; type: string; name: string; autoComplete: string; minLength?: number }) {
+  const [show, setShow] = useState(false);
+  const isPw = type === "password";
+  return (
+    <label className="grid gap-1.5 text-sm font-medium">
+      {label}
+      <span className="relative flex items-center">
+        <Icon className="pointer-events-none absolute left-4 size-4 text-muted-foreground" aria-hidden />
+        <input
+          name={name} type={isPw && show ? "text" : type} required autoComplete={autoComplete} minLength={minLength}
+          placeholder={isPw ? "••••••••" : type === "email" ? "you@example.com" : "Your full name"}
+          className="h-12 w-full rounded-full border border-input bg-surface pl-11 pr-11 text-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
+        />
+        {isPw && (
+          <Button variant="plain" type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "Hide password" : "Show password"} className="absolute right-3 rounded-full p-1.5 text-muted-foreground hover:text-sale">
+            {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </Button>
+        )}
+      </span>
+    </label>
+  );
+}
+
+function Divider() {
+  return (
+    <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
+      <span className="h-px flex-1 bg-border" />Or continue with<span className="h-px flex-1 bg-border" />
+    </div>
   );
 }
 
 export function AccountDialog() {
-  const { dialog, openDialog } = useShop();
-  const note = "Accounts aren't available in this demo yet — nothing was saved or sent.";
+  const { dialog, openDialog, authTab, openAuth, authReason, login, register, user, logout } = useShop();
+  const [error, setError] = useState<string | null>(null);
+  const [forgot, setForgot] = useState(false);
+  const open = dialog === "account";
+  useEffect(() => { if (open) { setError(null); setForgot(false); } }, [open, authTab]);
+
+  const onLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const err = login(String(f.get("email")), String(f.get("password")));
+    if (err) return setError(err);
+    toast.success("Welcome back!"); openDialog(authReason ? "cart" : null);
+  };
+  const onRegister = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const err = register({ name: String(f.get("name")), email: String(f.get("email")), password: String(f.get("password")) });
+    if (err) return setError(err);
+    toast.success("Your account has been created"); openDialog(authReason ? "cart" : null);
+  };
+
   return (
-    <Dialog open={dialog === "account"} onOpenChange={(o) => openDialog(o ? "account" : null)}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Welcome to Sholok</DialogTitle>
-          <DialogDescription>Sign in to track orders and save favourites (demo).</DialogDescription>
-        </DialogHeader>
-        <Tabs defaultValue="login">
-          <TabsList className="grid w-full grid-cols-2"><TabsTrigger value="login">Login</TabsTrigger><TabsTrigger value="register">Register</TabsTrigger></TabsList>
-          <TabsContent value="login"><DemoForm fields={[{ label: "Email or phone", type: "text" }, { label: "Password", type: "password" }]} cta="Login" note={note} /></TabsContent>
-          <TabsContent value="register"><DemoForm fields={[{ label: "Full name", type: "text" }, { label: "Email", type: "email" }, { label: "Password", type: "password" }]} cta="Create account" note={note} /></TabsContent>
-        </Tabs>
+    <Dialog open={open} onOpenChange={(o) => openDialog(o ? "account" : null)}>
+      <DialogContent className="max-w-[440px] overflow-hidden rounded-3xl border-0 p-0 shadow-elegant sm:rounded-3xl">
+        <div className="auth-hero px-7 pb-8 pt-7 text-primary-foreground">
+          <span className="mb-3 grid size-12 place-items-center rounded-2xl bg-primary-foreground/15 backdrop-blur"><ShieldCheck className="size-6" aria-hidden /></span>
+          <DialogTitle className="text-2xl font-extrabold tracking-tight">
+            {user ? `Hello, ${user.name.split(" ")[0]}` : forgot ? "Reset your password" : authTab === "login" ? "Welcome back" : "Create your account"}
+          </DialogTitle>
+          <DialogDescription className="mt-1 text-sm text-primary-foreground/80">
+            {user ? user.email : forgot ? "Enter your email and we'll send you a reset link." : authReason ?? (authTab === "login" ? "Log in to track orders and save your favourites." : "Join SHOLOK and start shopping in seconds.")}
+          </DialogDescription>
+        </div>
+
+        <div className="-mt-4 grid gap-5 rounded-t-3xl bg-background px-7 pb-7 pt-6">
+          {user ? (
+            <Button variant="outline" className="h-11" onClick={() => { logout(); openDialog(null); }}><LogOut /> Log out</Button>
+          ) : forgot ? (
+            <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); toast.success("If an account exists for this email, a reset link is on its way."); setForgot(false); }}>
+              <Field icon={Mail} label="Email Address" type="email" name="email" autoComplete="email" />
+              <Button type="submit" className="h-12 font-semibold">Send reset link</Button>
+              <Button variant="link" type="button" onClick={() => setForgot(false)}>Back to Login</Button>
+            </form>
+          ) : (
+            <>
+              <div role="tablist" className="grid grid-cols-2 rounded-full bg-muted p-1">
+                {(["login", "register"] as const).map((t) => (
+                  <Button key={t} variant="plain" role="tab" aria-selected={authTab === t} onClick={() => openAuth(t, authReason ?? undefined)}
+                    className={`h-9 rounded-full text-sm font-semibold transition ${authTab === t ? "bg-background text-primary shadow" : "text-muted-foreground hover:text-sale"}`}>
+                    {t === "login" ? "Login" : "Register"}
+                  </Button>
+                ))}
+              </div>
+              {authTab === "login" ? (
+                <form key="login" className="grid gap-4" onSubmit={onLogin}>
+                  <Field icon={Mail} label="Email Address" type="email" name="email" autoComplete="email" />
+                  <Field icon={Lock} label="Password" type="password" name="password" autoComplete="current-password" />
+                  <Button variant="link" type="button" className="-mt-2 h-auto justify-self-end p-0 text-xs" onClick={() => setForgot(true)}>Forgot password?</Button>
+                  {error && <p role="alert" className="rounded-2xl bg-sale-soft px-4 py-2.5 text-sm text-sale">{error}</p>}
+                  <Button type="submit" className="h-12 font-semibold">Login</Button>
+                  <Divider />
+                  <div className="grid gap-2.5">
+                    <SocialButton provider="google" label="Login With Google" />
+                    <SocialButton provider="facebook" label="Login With Facebook" />
+                  </div>
+                </form>
+              ) : (
+                <form key="register" className="grid gap-4" onSubmit={onRegister}>
+                  <Field icon={UserRound} label="Full Name" type="text" name="name" autoComplete="name" />
+                  <Field icon={Mail} label="Email Address" type="email" name="email" autoComplete="email" />
+                  <Field icon={Lock} label="Password" type="password" name="password" autoComplete="new-password" minLength={6} />
+                  {error && <p role="alert" className="rounded-2xl bg-sale-soft px-4 py-2.5 text-sm text-sale">{error}</p>}
+                  <Button type="submit" className="h-12 font-semibold">Register</Button>
+                  <Divider />
+                  <div className="grid gap-2.5">
+                    <SocialButton provider="google" label="Sign Up With Google" />
+                    <SocialButton provider="facebook" label="Sign Up With Facebook" />
+                  </div>
+                </form>
+              )}
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -176,7 +276,7 @@ export function SellerDialog() {
             </li>
           ))}
         </ul>
-        <p className="rounded-lg bg-sale-soft p-3 text-sm">Seller registration opens soon. This is a preview — no application is submitted.</p>
+        <p className="rounded-lg bg-sale-soft p-3 text-sm">Seller registration opens soon. We will notify you as soon as applications open.</p>
       </DialogContent>
     </Dialog>
   );

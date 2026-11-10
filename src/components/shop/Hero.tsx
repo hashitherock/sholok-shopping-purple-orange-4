@@ -110,7 +110,7 @@ export function HeroSlider() {
             <h2 className="text-3xl font-extrabold leading-tight text-primary-deep md:text-5xl">{s.title}</h2>
             <p className="max-w-sm text-sm text-foreground/80 md:text-base">{s.copy}</p>
             <div className="mt-2 flex flex-wrap gap-3">
-              <Button variant="plain" tabIndex={idx === i ? 0 : -1} onClick={() => showCategory(s.cat)} className="flex items-center gap-2 rounded-md bg-sale px-6 py-3 text-sm font-semibold text-sale-foreground shadow-lift transition-transform hover:-translate-y-0.5">
+              <Button variant="plain" tabIndex={idx === i ? 0 : -1} onClick={() => showCategory(s.cat)} className="flex items-center gap-2 rounded-full bg-sale px-6 py-3 text-sm font-semibold text-sale-foreground shadow-lift transition-transform hover:-translate-y-0.5">
                 {s.cta} <ArrowRight className="size-4" aria-hidden />
               </Button>
               {s.secondary && (

@@ -25,3 +25,14 @@ describe("Sholok shop rules", () => {
     expect(a.items.every((p) => p.inStock)).toBe(true);
   });
 });
+
+import { checkoutAuthStep } from "@/lib/shop/store";
+import { products as allProducts } from "@/lib/shop/products";
+describe("checkout sign-in rule", () => {
+  it("asks a registered but signed-out shopper to log in", () => expect(checkoutAuthStep(false, true)).toBe("login"));
+  it("asks a shopper with no account to register", () => expect(checkoutAuthStep(false, false)).toBe("register"));
+  it("lets a signed-in shopper proceed", () => expect(checkoutAuthStep(true, true)).toBe("proceed"));
+});
+describe("catalog rows", () => {
+  it("fills complete rows of six", () => expect(allProducts.length % 6).toBe(0));
+});

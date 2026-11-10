@@ -1,4 +1,4 @@
-// Central demo configuration. Replace placeholders with real values when available.
+// Central store configuration.
 // One value drives every advertised discount so the campaign and the pop-up cannot disagree.
 const campaignDiscountPercent = 20;
 

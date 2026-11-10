@@ -119,11 +119,11 @@ export function ProductDetailDialog() {
                     <Button variant="plain" onClick={() => setQty(product.id, (cart[product.id] ?? 0) + 1)} aria-label="Increase quantity" className="p-2.5 hover:bg-muted"><Plus className="size-4" /></Button>
                   </div>
                 ) : (
-                  <Button variant="plain" disabled={!product.inStock} onClick={() => addToCart(product.id)} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-5 font-semibold text-primary-foreground hover:bg-primary-deep disabled:opacity-50">
+                  <Button variant="plain" disabled={!product.inStock} onClick={() => addToCart(product.id)} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 font-semibold text-primary-foreground hover:bg-primary-deep disabled:opacity-50">
                     <ShoppingCart className="size-4" aria-hidden /> Add to Cart
                   </Button>
                 )}
-                <Button variant="plain" onClick={() => toggleWishlist(product.id)} aria-pressed={wishlist.includes(product.id)} className="flex h-11 items-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold hover:border-sale">
+                <Button variant="plain" onClick={() => toggleWishlist(product.id)} aria-pressed={wishlist.includes(product.id)} className="flex h-11 items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold hover:border-sale">
                   <Heart className={`size-4 ${wishlist.includes(product.id) ? "fill-sale text-sale" : ""}`} aria-hidden /> {wishlist.includes(product.id) ? "Saved" : "Wishlist"}
                 </Button>
               </div>

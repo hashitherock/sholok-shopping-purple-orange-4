@@ -122,7 +122,7 @@ export function TrendingSection() {
   const all = useMemo(() => products.filter((p) => p.isTrending), []);
   const cats = useMemo(() => categories.filter((c) => all.some((p) => p.category === c.id)), [all]);
   const [filter, setFilter] = useState<CategoryId | "all">("all");
-  const items = (filter === "all" ? all : all.filter((p) => p.category === filter)).slice(0, 10);
+  const items = (filter === "all" ? all : all.filter((p) => p.category === filter)).slice(0, 12);
   return (
     <section id="trending" aria-labelledby="trending-title" className="scroll-mt-16">
       <SectionHeader id="trending-title" title="Trending Items" subtitle="Popular picks worth discovering." />
@@ -151,7 +151,7 @@ export function MainCampaignBanner() {
         <h2 className="text-4xl font-extrabold tracking-tight text-primary-deep md:text-6xl">EVERYDAY STYLE</h2>
         <p className="text-lg font-semibold text-foreground/80 md:text-xl">Discover More, Love More</p>
         {active && <p className="text-base">Save up to <span className="rounded-md bg-sale px-2 py-0.5 font-display text-xl font-bold text-sale-foreground">{shopConfig.campaign.discountPercent}% OFF</span></p>}
-        <Button variant="plain" onClick={() => setView({ type: "category", id: "fashion-lifestyle" })} className="mt-3 flex w-fit items-center gap-2 rounded-md bg-sale px-7 py-3 text-sm font-semibold text-sale-foreground shadow-lift transition-transform hover:-translate-y-0.5">
+        <Button variant="plain" onClick={() => setView({ type: "category", id: "fashion-lifestyle" })} className="mt-3 flex w-fit items-center gap-2 rounded-full bg-sale px-7 py-3 text-sm font-semibold text-sale-foreground shadow-lift transition-transform hover:-translate-y-0.5">
           Shop Now <ArrowRight className="size-4" aria-hidden />
         </Button>
       </div>
@@ -160,7 +160,7 @@ export function MainCampaignBanner() {
 }
 
 export function NewArrivalsSection() {
-  const items = useMemo(() => products.filter((p) => p.isNewArrival).slice(0, 10), []);
+  const items = useMemo(() => products.filter((p) => p.isNewArrival).slice(0, 12), []);
   return (
     <section id="new-arrivals" aria-labelledby="new-title" className="scroll-mt-16">
       <SectionHeader id="new-title" title="New Arrivals" subtitle="Fresh additions across the store." />

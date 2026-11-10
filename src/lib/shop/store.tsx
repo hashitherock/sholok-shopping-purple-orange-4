@@ -33,7 +33,26 @@ type Ctx = {
   productId: string | null;
   openProduct: (id: string | null) => void;
   showCategory: (id: CategoryId) => void;
+  user: Account | null;
+  hasAccount: boolean;
+  authTab: AuthTab;
+  openAuth: (tab: AuthTab, reason?: string) => void;
+  authReason: string | null;
+  register: (a: { name: string; email: string; password: string }) => string | null;
+  login: (email: string, password: string) => string | null;
+  logout: () => void;
+  checkout: () => void;
 };
+
+export type AuthTab = "login" | "register";
+export type Account = { name: string; email: string };
+type StoredAccount = Account & { password: string };
+
+/** Checkout rule: signed-in shoppers proceed; known accounts are asked to log in; everyone else to register. */
+export function checkoutAuthStep(signedIn: boolean, hasAccount: boolean): "proceed" | AuthTab {
+  if (signedIn) return "proceed";
+  return hasAccount ? "login" : "register";
+}
 
 const ShopContext = createContext<Ctx | null>(null);
 
@@ -72,6 +91,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [location, setLocationState] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [productId, setProductId] = useState<string | null>(null);
+  const [accounts, setAccounts] = useState<StoredAccount[]>([]);
+  const [user, setUser] = useState<Account | null>(null);
+  const [authTab, setAuthTab] = useState<AuthTab>("login");
+  const [authReason, setAuthReason] = useState<string | null>(null);
 
   useEffect(() => {
     const ls = window.localStorage;
@@ -86,6 +109,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       write(ss, "sholok.seed", s);
     }
     setSeed(s);
+    setAccounts(read(ls, "sholok.accounts", []));
+    setUser(read(ls, "sholok.user", null));
     setHydrated(true);
   }, []);
 
@@ -147,6 +172,31 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   const showCategory = useCallback((id: CategoryId) => setView({ type: "category", id }), [setView]);
 
+  const openAuth = useCallback((tab: AuthTab, reason?: string) => { setAuthTab(tab); setAuthReason(reason ?? null); setDialog("account"); }, []);
+  const signIn = (a: Account) => { setUser(a); write(window.localStorage, "sholok.user", a); };
+  const register = (a: { name: string; email: string; password: string }) => {
+    const email = a.email.trim().toLowerCase();
+    if (accounts.some((x) => x.email === email)) return "An account with this email already exists. Please log in.";
+    const next = [...accounts, { name: a.name.trim(), email, password: a.password }];
+    setAccounts(next); write(window.localStorage, "sholok.accounts", next);
+    signIn({ name: a.name.trim(), email });
+    return null;
+  };
+  const login = (email: string, password: string) => {
+    const acc = accounts.find((x) => x.email === email.trim().toLowerCase());
+    if (!acc) return "No account found with this email. Please register first.";
+    if (acc.password !== password) return "Incorrect password. Please try again.";
+    signIn({ name: acc.name, email: acc.email });
+    return null;
+  };
+  const logout = () => { setUser(null); try { window.localStorage.removeItem("sholok.user"); } catch { /* ignore */ } toast("You have been logged out"); };
+  const checkout = () => {
+    const step = checkoutAuthStep(!!user, accounts.length > 0);
+    if (step === "login") openAuth("login", "Please log in to your account to continue to checkout.");
+    else if (step === "register") openAuth("register", "Please create an account to continue to checkout.");
+    else toast.success("Thank you! Your order request has been received.", { description: "Our team will contact you to confirm delivery." });
+  };
+
   const summary = useMemo(() => cartSummary(cart, products, now), [cart, now]);
   const cartItems = summary.items;
   const cartCount = summary.count;
@@ -156,6 +206,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     compare, toggleCompare, cart, cartItems, cartCount, cartTotal, addToCart, setQty, removeFromCart,
     wishlist, toggleWishlist, view, setView, lastSearch, submitSearch, clearSearchContext, seed,
     location, setLocation, dialog, openDialog: setDialog, productId, openProduct: setProductId, showCategory,
+    user, hasAccount: accounts.length > 0, authTab, openAuth, authReason, register, login, logout, checkout,
   };
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }

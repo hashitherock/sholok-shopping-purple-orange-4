@@ -162,3 +162,10 @@
     article .text-sm { font-size: 0.75rem; }
   }
 }
+
+/* Premium account window + brand button details */
+:root { --icon-accent: color-mix(in oklab, var(--sale) 14%, transparent); --shadow-elegant: 0 30px 60px -20px color-mix(in oklab, var(--primary) 45%, transparent); }
+.shadow-elegant { box-shadow: var(--shadow-elegant); }
+.auth-hero { background: radial-gradient(120% 120% at 100% 0%, var(--sale) 0%, transparent 55%), linear-gradient(135deg, var(--primary-deep), var(--primary)); }
+.social-btn { background: oklch(1 0 0); color: oklch(0.2 0 0); border: 1px solid oklch(0.53 0.003 150); font-family: "Google Sans", inherit; }
+.social-btn:hover { border-color: var(--sale); box-shadow: 0 0 0 3px color-mix(in oklab, var(--sale) 18%, transparent); }

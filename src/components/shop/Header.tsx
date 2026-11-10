@@ -40,7 +40,7 @@ function DeliveryLocation() {
   return (
     <Button variant="plain"
       onClick={() => openDialog("location")}
-      className="flex items-center gap-2 rounded-lg border border-border px-2 py-2 text-left transition-colors hover:border-primary hover:bg-primary-soft"
+      className="flex items-center gap-2 rounded-full border border-border px-3 py-2 text-left transition-colors hover:border-sale hover:bg-sale-soft"
     >
       <MapPin className="size-5 text-primary" aria-hidden />
       <span className="flex flex-col leading-tight">
@@ -86,7 +86,7 @@ function ProductSearch() {
 
   return (
     <div ref={boxRef} className="relative w-full">
-      <form role="search" onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex h-11 overflow-hidden rounded-md border border-primary bg-surface md:h-12">
+      <form role="search" onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex h-11 overflow-hidden rounded-full border-2 border-primary bg-surface p-0.5 md:h-12">
         <label htmlFor="site-search" className="sr-only">Search products</label>
         <input
           id="site-search"
@@ -107,7 +107,7 @@ function ProductSearch() {
             <X className="size-4" />
           </Button>
         )}
-        <Button variant="plain" type="submit" aria-label="Search" className="flex items-center gap-2 bg-sale px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-sale/90 md:px-6">
+        <Button variant="plain" type="submit" aria-label="Search" className="flex items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-sale md:px-6">
           <Search className="size-4" aria-hidden /> <span className="hidden md:inline">Search</span>
         </Button>
       </form>
@@ -145,7 +145,7 @@ function ProductSearch() {
 
 function ActionButton({ icon: Icon, label, sub, count, onClick }: { icon: typeof User; label: string; sub?: string; count?: number; onClick: () => void }) {
   return (
-    <Button variant="plain" onClick={onClick} className="group flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-primary-soft" aria-label={count !== undefined ? `${label}, ${count} items` : label}>
+    <Button variant="plain" onClick={onClick} className="group flex items-center gap-2 rounded-full px-2.5 py-1.5 transition-colors hover:bg-sale-soft hover:text-sale" aria-label={count !== undefined ? `${label}, ${count} items` : label}>
       <span className="relative">
         <Icon className="size-6 text-foreground group-hover:text-primary" aria-hidden />
         {count !== undefined && (
@@ -161,20 +161,20 @@ function ActionButton({ icon: Icon, label, sub, count, onClick }: { icon: typeof
 }
 
 export function MainHeader() {
-  const { openDialog, wishlist, cartCount, cartTotal } = useShop();
+  const { openDialog, openAuth, user, wishlist, cartCount, cartTotal } = useShop();
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <>
       <div className="border-b border-border bg-surface">
         <div className="container-shop flex flex-wrap items-center gap-2 py-3 xl:flex-nowrap md:gap-3 md:py-4">
-          <Button variant="plain" className="rounded-md p-1.5 hover:bg-muted lg:hidden" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
+          <Button variant="plain" className="rounded-full p-1.5 hover:bg-muted lg:hidden" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
             <Menu className="size-6" />
           </Button>
           <Logo />
           <DeliveryLocation />
           <div className="order-last w-full xl:order-none xl:min-w-32 xl:flex-1"><ProductSearch /></div>
           <div className="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
-            <ActionButton icon={User} sub="Login" label="My Account" onClick={() => openDialog("account")} />
+            <ActionButton icon={User} sub={user ? user.name.split(" ")[0] : "Login"} label="My Account" onClick={() => openAuth("login")} />
             <ActionButton icon={Heart} sub={`${wishlist.length} Favorite`} label="My Wishlist" count={wishlist.length} onClick={() => openDialog("wishlist")} />
             <ActionButton icon={ShoppingCart} sub={`${cartCount} Your Cart:`} label={formatPrice(cartTotal)} count={cartCount} onClick={() => openDialog("cart")} />
           </div>
@@ -218,11 +218,11 @@ function MainNavigation() {
           </DropdownMenuContent>
         </DropdownMenu>
         {actions.map((a) => (
-          <Button variant="plain" key={a.label} onClick={a.run} className="rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-primary-deep">
+          <Button variant="plain" key={a.label} onClick={a.run} className="rounded-full px-3 py-1.5 text-sm font-medium transition-colors hover:bg-sale">
             {a.label}
           </Button>
         ))}
-        <Button variant="plain" onClick={() => openDialog("seller")} className="ml-auto flex items-center gap-2 rounded-md border border-primary-foreground/40 px-2 py-1.5 text-sm font-semibold transition-colors hover:bg-primary-foreground hover:text-primary">
+        <Button variant="plain" onClick={() => openDialog("seller")} className="ml-auto flex items-center gap-2 rounded-full border border-primary-foreground/40 px-4 py-1.5 text-sm font-semibold transition-colors hover:border-sale hover:bg-sale">
           <Store className="size-4" aria-hidden /> Become a Seller
         </Button>
       </div>
@@ -243,15 +243,15 @@ function MobileMenu({ open, onOpenChange }: { open: boolean; onOpenChange: (o: b
         </Button>
         <nav aria-label="Mobile" className="p-2">
           {actions.map((a) => (
-            <Button variant="plain" key={a.label} onClick={close(a.run)} className="block w-full rounded-md px-3 py-2.5 text-left text-sm font-medium hover:bg-primary-soft">{a.label}</Button>
+            <Button variant="plain" key={a.label} onClick={close(a.run)} className="block w-full rounded-full px-3 py-2.5 text-left text-sm font-medium hover:bg-primary-soft">{a.label}</Button>
           ))}
-          <Button variant="plain" onClick={close(() => openDialog("seller"))} className="block w-full rounded-md px-3 py-2.5 text-left text-sm font-semibold text-primary hover:bg-primary-soft">Become a Seller</Button>
+          <Button variant="plain" onClick={close(() => openDialog("seller"))} className="block w-full rounded-full px-3 py-2.5 text-left text-sm font-semibold text-primary hover:bg-primary-soft">Become a Seller</Button>
         </nav>
         <p className="px-5 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">SHOP BY CATEGORY</p>
         <ul className="p-2">
           {categories.map((c) => (
             <li key={c.id}>
-              <Button variant="plain" onClick={close(() => showCategory(c.id))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-primary-soft">
+              <Button variant="plain" onClick={close(() => showCategory(c.id))} className="flex w-full items-center gap-3 rounded-full px-3 py-2 text-left text-sm hover:bg-primary-soft">
                 <c.icon className="size-4 text-primary" aria-hidden /> {c.name}
               </Button>
             </li>
