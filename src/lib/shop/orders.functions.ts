@@ -27,3 +27,20 @@ export const placeOrder = createServerFn({ method: "POST" })
     if (error) { console.error(error); throw new Error("Could not place the order. Please try again."); }
     return row;
   });
+
+export const orderStatuses = ["placed", "confirmed", "shipped", "delivered", "cancelled"] as const;
+
+export const updateOrderStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; status: string }) => {
+    if (typeof d?.id !== "string" || !(orderStatuses as readonly string[]).includes(d.status)) throw new Error("Invalid status");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("orders").update({ status: data.status }).eq("id", data.id);
+    if (error) { console.error(error); throw new Error("Could not update the order."); }
+    return { ok: true };
+  });
