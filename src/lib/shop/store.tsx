@@ -47,6 +47,7 @@ type Ctx = {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   checkout: () => void;
+  clearCart: () => void;
 };
 
 export type AuthTab = "login" | "register";
@@ -229,7 +230,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     const step = checkoutAuthStep(!!user, hasAccount);
     if (step === "login") openAuth("login", "Please log in to your account to continue to checkout.");
     else if (step === "register") openAuth("register", "Please create an account to continue to checkout.");
-    else toast.success("Thank you! Your order request has been received.", { description: "Our team will contact you to confirm delivery." });
+    else { setDialog(null); void navigate({ to: "/checkout" }); }
   };
 
   const summary = useMemo(() => cartSummary(cart, products, now), [cart, now]);
@@ -241,7 +242,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     compare, toggleCompare, cart, cartItems, cartCount, cartTotal, addToCart, setQty, removeFromCart,
     wishlist, toggleWishlist, view, setView, lastSearch, submitSearch, clearSearchContext, seed,
     location, setLocation, dialog, openDialog: setDialog, productId, openProduct: setProductId, showCategory,
-    user, hasAccount, authTab, openAuth, authReason, register, login, loginWithGoogle, resetPassword, logout, refreshUser, checkout,
+    user, hasAccount, authTab, openAuth, authReason, register, login, loginWithGoogle, resetPassword, logout, refreshUser, checkout, clearCart: () => setCart({}),
   };
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
