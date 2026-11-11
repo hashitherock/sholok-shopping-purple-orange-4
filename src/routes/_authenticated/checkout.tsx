@@ -40,7 +40,7 @@ function Checkout() {
   const o = useMemo(() => computeOrder(cart, chosen?.division ?? "", applied), [cart, chosen, applied]);
 
   const submit = async () => {
-    if (!chosen) return toast.error("Please add a delivery address first.");
+    if (!chosen) { toast.error("Please add a delivery address first."); return; }
     setBusy(true);
     try {
       const r = await place({ data: { cart, addressId: chosen.id, coupon: applied, payment: "cod" } });
