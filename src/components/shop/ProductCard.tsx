@@ -71,7 +71,7 @@ export function ProductCard({ product: source }: { product: Product }) {
         <Button variant="plain"
           onClick={(e) => { e.stopPropagation(); addToCart(product.id); }}
           disabled={!product.inStock}
-          className="mt-1.5 flex h-9 items-center justify-center gap-1 rounded-md border border-primary text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground disabled:hover:bg-transparent"
+          className="mt-1.5 flex h-9 items-center justify-center gap-1 rounded-full border border-primary text-xs font-semibold text-primary transition-all duration-200 hover:border-sale hover:bg-sale hover:text-sale-foreground hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground disabled:hover:bg-transparent"
         >
           <ShoppingCart className="size-4" aria-hidden /> {product.inStock ? "Add to Cart" : "Unavailable"}
         </Button>
@@ -119,7 +119,7 @@ export function ProductDetailDialog() {
                     <Button variant="plain" onClick={() => setQty(product.id, (cart[product.id] ?? 0) + 1)} aria-label="Increase quantity" className="p-2.5 hover:bg-muted"><Plus className="size-4" /></Button>
                   </div>
                 ) : (
-                  <Button variant="plain" disabled={!product.inStock} onClick={() => addToCart(product.id)} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 font-semibold text-primary-foreground hover:bg-primary-deep disabled:opacity-50">
+                  <Button variant="plain" disabled={!product.inStock} onClick={() => addToCart(product.id)} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 font-semibold text-primary-foreground transition-all duration-200 hover:bg-sale hover:text-sale-foreground active:scale-95 disabled:opacity-50">
                     <ShoppingCart className="size-4" aria-hidden /> Add to Cart
                   </Button>
                 )}

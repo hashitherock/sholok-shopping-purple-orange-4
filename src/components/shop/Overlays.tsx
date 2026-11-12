@@ -85,7 +85,7 @@ export function WishlistDrawer() {
                   <p className="line-clamp-2 text-sm font-semibold">{p.name}</p>
                   <Price product={p} />
                   <div className="mt-1 flex gap-2">
-                    <Button variant="plain" disabled={!p.inStock} onClick={() => addToCart(p.id)} className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-50">Add to Cart</Button>
+                    <Button variant="plain" disabled={!p.inStock} onClick={() => addToCart(p.id)} className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:bg-sale hover:text-sale-foreground active:scale-95 disabled:opacity-50">Add to Cart</Button>
                     <Button variant="plain" onClick={() => toggleWishlist(p.id)} className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-destructive hover:text-destructive">Remove</Button>
                   </div>
                 </div>

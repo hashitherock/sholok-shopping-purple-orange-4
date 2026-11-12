@@ -14,3 +14,10 @@
 - [x] Step 2: Lovable Cloud accounts (login from any device, real password reset), My Account, addresses, order history.
 - [x] Step 3: Checkout page (Dhaka ৳100 / outside ৳150), coupons, Cash on Delivery. Card/bKash/Nagad pending user decision.
 - [ ] Step 4: Reviews, recently viewed, filters/sorting, product sizes/colors, newsletter.
+
+## Become a Seller brief (in steps)
+- [x] Floating cart moved to right-middle (premium vertical pill); Add to Cart buttons rounded with red-orange hover.
+- [ ] Seller step A: seller landing page, seller registration/login, pending approval, store settings.
+- [ ] Seller step B: seller products (add/edit, images, draft/submit), admin approval, approved items in shop.
+- [ ] Seller step C: seller orders, earnings, commission (admin-set), withdrawals (bKash/Nagad/Bank).
+- [ ] Seller step D: notifications, support tickets, admin seller management.
