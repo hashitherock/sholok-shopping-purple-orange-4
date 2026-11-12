@@ -17,7 +17,7 @@
 
 ## Become a Seller brief (in steps)
 - [x] Floating cart moved to right-middle (premium vertical pill); Add to Cart buttons rounded with red-orange hover.
-- [ ] Seller step A: seller landing page, seller registration/login, pending approval, store settings.
+- [ ] Seller step A (approved): seller landing page, seller registration/login, pending approval, store settings; verify account and saved settings end-to-end.
 - [ ] Seller step B: seller products (add/edit, images, draft/submit), admin approval, approved items in shop.
 - [ ] Seller step C: seller orders, earnings, commission (admin-set), withdrawals (bKash/Nagad/Bank).
 - [ ] Seller step D: notifications, support tickets, admin seller management.

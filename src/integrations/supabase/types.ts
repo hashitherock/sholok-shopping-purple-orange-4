@@ -128,6 +128,113 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          nid_number: string
+          phone: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          nid_number: string
+          phone: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          nid_number?: string
+          phone?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seller_stores: {
+        Row: {
+          address: string
+          banner_path: string
+          business_type: string
+          city: string
+          contact_email: string
+          contact_phone: string
+          description: string
+          district: string
+          facebook: string
+          id: string
+          instagram: string
+          logo_path: string
+          name: string
+          postal_code: string
+          return_policy: string
+          shipping_policy: string
+          slug: string
+          terms_accepted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          banner_path?: string
+          business_type: string
+          city: string
+          contact_email: string
+          contact_phone: string
+          description: string
+          district: string
+          facebook?: string
+          id?: string
+          instagram?: string
+          logo_path?: string
+          name: string
+          postal_code: string
+          return_policy?: string
+          shipping_policy?: string
+          slug: string
+          terms_accepted_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          banner_path?: string
+          business_type?: string
+          city?: string
+          contact_email?: string
+          contact_phone?: string
+          description?: string
+          district?: string
+          facebook?: string
+          id?: string
+          instagram?: string
+          logo_path?: string
+          name?: string
+          postal_code?: string
+          return_policy?: string
+          shipping_policy?: string
+          slug?: string
+          terms_accepted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_stores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "seller_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -175,6 +282,24 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      submit_seller_application: {
+        Args: {
+          p_address: string
+          p_city: string
+          p_description: string
+          p_district: string
+          p_email: string
+          p_full_name: string
+          p_name: string
+          p_nid: string
+          p_phone: string
+          p_postal: string
+          p_slug: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

@@ -15,6 +15,13 @@
       "when": 1794380144278,
       "tag": "0001_admin_roles_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794471002368,
+      "tag": "0002_seller_accounts_and_stores",
+      "breakpoints": true
     }
   ]
 }
